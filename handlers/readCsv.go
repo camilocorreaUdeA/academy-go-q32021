@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -32,8 +33,16 @@ func ReadCSV(w http.ResponseWriter, r *http.Request) {
 		}
 		response = append(response, resp)
 	}
+	responseItems := []models.Item{}
+	requestedType := r.URL.Query().Get("type")
+	fmt.Println(requestedType)
+	for _, item := range response {
+		if item.Type == requestedType {
+			responseItems = append(responseItems, item)
+		}
+	}
 	w.WriteHeader(http.StatusOK)
-	respJson, _ := json.Marshal(response)
+	respJson, _ := json.Marshal(responseItems)
 	w.Write(respJson)
 	return
 }
