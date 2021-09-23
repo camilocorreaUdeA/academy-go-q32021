@@ -9,8 +9,8 @@ import (
 	"github.com/camilocorreaUdeA/academy-go-q32021/models"
 )
 
-const filePath = "assets/items.csv"
-
+// GetItems handles the request and returns back requested items
+// in json encoded response.
 func GetItems(w http.ResponseWriter, r *http.Request) {
 	items, err := common.ReadCSVFile(filePath)
 	if err != nil {
@@ -27,7 +27,13 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	w.WriteHeader(http.StatusOK)
-	respJson, _ := json.Marshal(responseItems)
+	respJson, err := json.Marshal(responseItems)
+	if err != nil {
+		log.Printf("Failed to marshal handler response: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
 	w.Write(respJson)
 	return
 }
