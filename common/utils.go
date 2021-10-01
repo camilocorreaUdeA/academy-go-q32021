@@ -1,8 +1,11 @@
 package common
 
 import (
+	"encoding/csv"
 	"fmt"
 	"io/ioutil"
+	"log"
+	"os"
 	"strconv"
 	"strings"
 
@@ -34,4 +37,51 @@ func ReadCSVFile(filePath string) ([]models.Item, error) {
 	}
 
 	return response, nil
+}
+
+func UpdateCSVFile(filename string, record []string) error {
+	records, err := readCSVFileRecords(filename)
+	if err != nil {
+		log.Printf("failed to read csv file: %s", err)
+		return err
+	}
+	records = append(records, record)
+	err = writeRecordsToCSVFile(filename, records)
+	if err != nil {
+		log.Printf("failed to write csv file: %s", err)
+		return err
+	}
+	return nil
+}
+
+func readCSVFileRecords(filename string) ([][]string, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		log.Printf("could not open csv file (read): %s", err)
+		return [][]string{}, err
+	}
+	defer file.Close()
+	reader := csv.NewReader(file)
+	records, err := reader.ReadAll()
+	if err != nil {
+		log.Printf("failed read all operation: %s", err)
+		return [][]string{}, err
+	}
+	return records, nil
+}
+
+func writeRecordsToCSVFile(filename string, records [][]string) error {
+	file, err := os.OpenFile(filename, os.O_WRONLY, 777)
+	if err != nil {
+		log.Printf("could not open csv file (write): %s", err)
+		return err
+	}
+	defer file.Close()
+	writer := csv.NewWriter(file)
+	err = writer.WriteAll(records)
+	if err != nil {
+		log.Printf("failed write all operation: %s", err)
+		return err
+	}
+	return nil
 }

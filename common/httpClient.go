@@ -6,46 +6,56 @@ import (
 	"net/http"
 )
 
-func NewHttpClient() *http.Client {
-	return &http.Client{}
+type HttpClient interface {
+	CallApi(method, url, resource, id string) ([]byte, error)
 }
 
-func CallApi(method, url, resource, id string) ([]byte, error) {
+type httpClient struct {
+	client *http.Client
+}
+
+func NewHttpClient() *httpClient {
+	newClient := &httpClient{
+		client: &http.Client{},
+	}
+	return newClient
+}
+
+func (h *httpClient) CallApi(method, url, resource, id string) ([]byte, error) {
 	var response *http.Response
 	var err error
-	uri := buildURI(url, resource, id)
+	uri := h.buildURI(url, resource, id)
 	switch method {
 	case http.MethodGet:
-		response, err = callGET(uri)
+		response, err = h.callGET(uri)
 	default:
 		return nil, fmt.Errorf("bad method")
 	}
 	if err != nil {
 
 	}
-	return processResponse(response)
+	return h.processResponse(response)
 }
 
-func buildURI(url, resource, id string) string {
+func (h *httpClient) buildURI(url, resource, id string) string {
 	httpPlaceholder := "http://%s/%s/%s"
 	return fmt.Sprintf(httpPlaceholder, url, resource, id)
 }
 
-func callGET(url string) (*http.Response, error) {
-	client := NewHttpClient()
+func (h *httpClient) callGET(url string) (*http.Response, error) {
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return &http.Response{}, fmt.Errorf("get request failed: %s", err)
 	}
 
-	response, err := client.Do(request)
+	response, err := h.client.Do(request)
 	if err != nil {
 		return &http.Response{}, fmt.Errorf("get request failed: %s", err)
 	}
 	return response, nil
 }
 
-func processResponse(response *http.Response) ([]byte, error) {
+func (h *httpClient) processResponse(response *http.Response) ([]byte, error) {
 	if response == nil || response.Body == nil {
 		return []byte{}, fmt.Errorf("empty or nil response")
 	}

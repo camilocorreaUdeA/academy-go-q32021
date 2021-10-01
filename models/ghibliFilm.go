@@ -18,6 +18,4 @@ type GhibliFilm struct {
 	Url                    string `json:"url,omitempty"`
 }
 
-type Urls struct {
-	Urls []string
-}
+type Urls []string

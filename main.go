@@ -9,7 +9,10 @@ import (
 	"github.com/joho/godotenv"
 )
 
-const itemsRoute = "/items/"
+const (
+	itemsRoute = "/items/"
+	filmsRoute = "/films/"
+)
 
 func main() {
 
@@ -22,6 +25,7 @@ func main() {
 	serviceConfig := ":" + os.Getenv("SERVICE_PORT")
 
 	http.HandleFunc(itemsRoute, handlers.GetItems)
+	http.HandleFunc(filmsRoute, handlers.GetFilms)
 	err = http.ListenAndServe(serviceConfig, nil)
 	if err != nil {
 		log.Printf("An error ocurred trying to run the service: %s", err.Error())
