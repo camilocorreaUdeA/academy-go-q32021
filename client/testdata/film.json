@@ -1,0 +1,25 @@
+{
+    "id": "5fdfb320-2a02-49a7-94ff-5ca418cae602",
+    "title": "When Marnie Was There",
+    "original_title": "思い出のマーニー",
+    "original_title_romanised": "Omoide no Marnie",
+    "description": "The film follows Anna Sasaki living with her relatives in the seaside town. Anna comes across a nearby abandoned mansion, where she meets Marnie, a mysterious girl who asks her to promise to keep their secrets from everyone. As the summer progresses, Anna spends more time with Marnie, and eventually Anna learns the truth about her family and foster care.",
+    "director": "Hiromasa Yonebayashi",
+    "producer": "Yoshiaki Nishimura",
+    "release_date": "2014",
+    "running_time": "103",
+    "rt_score": "92",
+    "people": [
+      "https://ghibliapi.herokuapp.com/people/"
+    ],
+    "species": [
+      "https://ghibliapi.herokuapp.com/species/af3910a6-429f-4c74-9ad5-dfe1c4aa04f2"
+    ],
+    "locations": [
+      "https://ghibliapi.herokuapp.com/locations/"
+    ],
+    "vehicles": [
+      "https://ghibliapi.herokuapp.com/vehicles/"
+    ],
+    "url": "https://ghibliapi.herokuapp.com/films/5fdfb320-2a02-49a7-94ff-5ca418cae602"
+  }
