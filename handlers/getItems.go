@@ -5,14 +5,14 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/camilocorreaUdeA/academy-go-q32021/common"
 	"github.com/camilocorreaUdeA/academy-go-q32021/models"
+	"github.com/camilocorreaUdeA/academy-go-q32021/repository"
 )
 
 // GetItems handles the request and returns back requested items
 // in json encoded response.
 func GetItems(w http.ResponseWriter, r *http.Request) {
-	items, err := common.ReadCSVFile(filePath)
+	items, err := repository.ReadCSVFile(filePath)
 	if err != nil {
 		log.Printf("Failed to read the file: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)

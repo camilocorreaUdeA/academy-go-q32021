@@ -1,4 +1,4 @@
-package common
+package repository
 
 import (
 	"testing"
@@ -9,13 +9,15 @@ import (
 func TestUpdateCSVFile(t *testing.T) {
 	asserter := assert.New(t)
 	record := []string{"100", "dummy", "dummy"}
-	err := UpdateCSVFile("./testdata/test.csv", record)
+	repo := &FilmsRepository{}
+	err := repo.UpdateCSVFile("./testdata/test.csv", record)
 	asserter.Nil(err)
 }
 
 func Test_readCSVFileRecords(t *testing.T) {
 	asserter := assert.New(t)
-	records, err := readCSVFileRecords("./testdata/test.csv")
+	repo := &FilmsRepository{}
+	records, err := repo.readCSVFileRecords("./testdata/test.csv")
 	asserter.Nil(err)
 	asserter.NotEmpty(records)
 }
@@ -29,6 +31,7 @@ func Test_writeRecordsToCSVFile(t *testing.T) {
 		{"3", "Notebook", "Scholar"},
 		{"4", "IPhone", "Electronics"},
 	}
-	err := writeRecordsToCSVFile("./testdata/test.csv", records)
+	repo := &FilmsRepository{}
+	err := repo.writeRecordsToCSVFile("./testdata/test.csv", records)
 	asserter.Nil(err)
 }

@@ -1,4 +1,4 @@
-package handlers
+package services
 
 import "github.com/camilocorreaUdeA/academy-go-q32021/models"
 

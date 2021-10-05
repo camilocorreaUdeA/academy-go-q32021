@@ -1,4 +1,4 @@
-package common
+package repository
 
 import (
 	"encoding/csv"
@@ -11,6 +11,13 @@ import (
 
 	"github.com/camilocorreaUdeA/academy-go-q32021/models"
 )
+
+type Repository interface {
+	UpdateCSVFile(filename string, record []string) error
+}
+
+type FilmsRepository struct {
+}
 
 // ReadCSVFile returns a slice of model.Item objects that were
 // read from the .CSV file in the specified file path.
@@ -39,14 +46,14 @@ func ReadCSVFile(filePath string) ([]models.Item, error) {
 	return response, nil
 }
 
-func UpdateCSVFile(filename string, record []string) error {
-	records, err := readCSVFileRecords(filename)
+func (fr *FilmsRepository) UpdateCSVFile(filename string, record []string) error {
+	records, err := fr.readCSVFileRecords(filename)
 	if err != nil {
 		log.Printf("failed to read csv file: %s", err)
 		return err
 	}
 	records = append(records, record)
-	err = writeRecordsToCSVFile(filename, records)
+	err = fr.writeRecordsToCSVFile(filename, records)
 	if err != nil {
 		log.Printf("failed to write csv file: %s", err)
 		return err
@@ -54,7 +61,7 @@ func UpdateCSVFile(filename string, record []string) error {
 	return nil
 }
 
-func readCSVFileRecords(filename string) ([][]string, error) {
+func (fr *FilmsRepository) readCSVFileRecords(filename string) ([][]string, error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		log.Printf("could not open csv file (read): %s", err)
@@ -70,7 +77,7 @@ func readCSVFileRecords(filename string) ([][]string, error) {
 	return records, nil
 }
 
-func writeRecordsToCSVFile(filename string, records [][]string) error {
+func (fr *FilmsRepository) writeRecordsToCSVFile(filename string, records [][]string) error {
 	file, err := os.OpenFile(filename, os.O_WRONLY, 777)
 	if err != nil {
 		log.Printf("could not open csv file (write): %s", err)
