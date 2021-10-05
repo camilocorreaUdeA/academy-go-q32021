@@ -9,6 +9,10 @@ import (
 	"github.com/camilocorreaUdeA/academy-go-q32021/repository"
 )
 
+type Service interface {
+	GetFilm(query url.Values) error
+}
+
 type GhibliService struct {
 	filsmRepo  repository.Repository
 	httpClient client.GhibliApiClient

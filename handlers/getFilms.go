@@ -1,29 +1,30 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
-	"github.com/camilocorreaUdeA/academy-go-q32021/client"
-	"github.com/camilocorreaUdeA/academy-go-q32021/common"
-	"github.com/camilocorreaUdeA/academy-go-q32021/repository"
 	"github.com/camilocorreaUdeA/academy-go-q32021/services"
 )
 
+type GhibliHandler struct {
+	service services.Service
+}
+
+func NewGhibliHandler(svc services.Service) (GhibliHandler, error) {
+	if svc == nil {
+		return GhibliHandler{}, fmt.Errorf("the handler requires a valid service")
+	}
+	return GhibliHandler{
+		service: svc,
+	}, nil
+}
+
 // GetFilms handles the request and returns back requested items
 // in json encoded response.
-func GetFilms(w http.ResponseWriter, r *http.Request) {
-	client, err := client.NewGhibliApiClient(common.NewHttpClient())
-	if err != nil {
-		log.Printf("Failed to marshal handler response: %s", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
-		return
-	}
-	repo := &repository.FilmsRepository{}
-	svc, err := services.NewGhibliService(repo, client)
-	svc.GetFilm(r.URL.Query())
-
+func (gh GhibliHandler) GetFilms(w http.ResponseWriter, r *http.Request) {
+	err := gh.service.GetFilm(r.URL.Query())
 	if err != nil {
 		log.Printf("Failed to marshal handler response: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
