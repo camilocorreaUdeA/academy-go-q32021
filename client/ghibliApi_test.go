@@ -1,6 +1,7 @@
 package client
 
 import (
+	"errors"
 	"io/ioutil"
 	"testing"
 
@@ -27,29 +28,62 @@ func TestNewGhibliApiClient(t *testing.T) {
 }
 
 func TestGetFilms(t *testing.T) {
-	asserter := assert.New(t)
-	film, _ := ioutil.ReadFile("./testdata/allfilms.json")
-	mockClient := &MockHttpClient{}
-	mockClient.On("CallApi", mock.AnythingOfType("string"), mock.AnythingOfType("string"),
-		mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(film, nil)
-	gac, err := NewGhibliApiClient(mockClient)
-	asserter.Nil(err)
-	asserter.NotNil(gac)
-	films := gac.GetFilms()
-	asserter.Equal(21, len(films))
+	t.Run("Films fetched successfully", func(t *testing.T) {
+		asserter := assert.New(t)
+		film, _ := ioutil.ReadFile("./testdata/allfilms.json")
+		mockClient := &MockHttpClient{}
+		mockClient.On("CallApi", mock.AnythingOfType("string"), mock.AnythingOfType("string"),
+			mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(film, nil)
+		gac, err := NewGhibliApiClient(mockClient)
+		asserter.Nil(err)
+		asserter.NotNil(gac)
+		films, err := gac.GetFilms()
+		asserter.Nil(err)
+		asserter.Equal(21, len(films))
+	})
+	t.Run("Films fetch failed", func(t *testing.T) {
+		asserter := assert.New(t)
+		film := []byte{}
+		mockClient := &MockHttpClient{}
+		mockClient.On("CallApi", mock.AnythingOfType("string"), mock.AnythingOfType("string"),
+			mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(film, errors.New("error"))
+		gac, err := NewGhibliApiClient(mockClient)
+		asserter.Nil(err)
+		asserter.NotNil(gac)
+		films, err := gac.GetFilms()
+		asserter.NotNil(err)
+		asserter.Equal(0, len(films))
+	})
 }
 
 func TestGetFilmById(t *testing.T) {
-	asserter := assert.New(t)
-	film, _ := ioutil.ReadFile("./testdata/film.json")
-	mockClient := &MockHttpClient{}
-	mockClient.On("CallApi", mock.AnythingOfType("string"), mock.AnythingOfType("string"),
-		mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(film, nil)
-	gac, err := NewGhibliApiClient(mockClient)
-	asserter.Nil(err)
-	asserter.NotNil(gac)
-	filmObj, err := gac.GetFilmById("5fdfb320-2a02-49a7-94ff-5ca418cae602")
-	asserter.Nil(err)
-	asserter.NotEmpty(filmObj)
-	asserter.Equal("When Marnie Was There", filmObj.Title)
+	t.Run("Film fetched successfully", func(t *testing.T) {
+		asserter := assert.New(t)
+		film, _ := ioutil.ReadFile("./testdata/film.json")
+		mockClient := &MockHttpClient{}
+		mockClient.On("CallApi", mock.AnythingOfType("string"), mock.AnythingOfType("string"),
+			mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(film, nil)
+		gac, err := NewGhibliApiClient(mockClient)
+		asserter.Nil(err)
+		asserter.NotNil(gac)
+		filmObj, err := gac.GetFilmById("5fdfb320-2a02-49a7-94ff-5ca418cae602")
+		asserter.Nil(err)
+		asserter.NotEmpty(filmObj)
+		asserter.Equal("When Marnie Was There", filmObj.Title)
+	})
+
+	t.Run("Film fetch failed", func(t *testing.T) {
+		asserter := assert.New(t)
+		film := []byte{}
+		mockClient := &MockHttpClient{}
+		mockClient.On("CallApi", mock.AnythingOfType("string"), mock.AnythingOfType("string"),
+			mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(film, errors.New("error"))
+		gac, err := NewGhibliApiClient(mockClient)
+		asserter.Nil(err)
+		asserter.NotNil(gac)
+		filmObj, err := gac.GetFilmById("5fdfb320-2a02-49a7-94ff-5ca418cae602")
+		asserter.NotNil(err)
+		asserter.Empty(filmObj)
+	})
+
 }

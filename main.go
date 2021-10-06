@@ -27,12 +27,12 @@ func main() {
 	}
 
 	serviceConfig := ":" + os.Getenv("SERVICE_PORT")
-	repo := repository.FilmsRepository{}
+	repo := repository.NewFilmsRepo()
 	client, err := client.NewGhibliApiClient(common.NewHttpClient())
 	if err != nil {
 
 	}
-	service, err := services.NewGhibliService(&repo, client)
+	service, err := services.NewGhibliService(repo, client)
 	if err != nil {
 
 	}
@@ -41,8 +41,8 @@ func main() {
 
 	}
 
-	http.HandleFunc(itemsRoute, handlers.GetItems)
 	http.HandleFunc(filmsRoute, ghibliHandler.GetFilms)
+	http.HandleFunc(filmsRoute, ghibliHandler.GetFilm)
 	err = http.ListenAndServe(serviceConfig, nil)
 	if err != nil {
 		log.Printf("An error ocurred trying to run the service: %s", err.Error())

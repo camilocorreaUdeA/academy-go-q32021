@@ -9,9 +9,17 @@ import (
 func TestUpdateCSVFile(t *testing.T) {
 	asserter := assert.New(t)
 	record := []string{"100", "dummy", "dummy"}
-	repo := &FilmsRepository{}
+	repo := NewFilmsRepo()
 	err := repo.UpdateCSVFile("./testdata/test.csv", record)
 	asserter.Nil(err)
+}
+
+func TestReadCSVFile(t *testing.T) {
+	asserter := assert.New(t)
+	repo := NewFilmsRepo()
+	records, err := repo.ReadCSVFile("./testdata/test.csv")
+	asserter.Nil(err)
+	asserter.NotEmpty(records)
 }
 
 func Test_readCSVFileRecords(t *testing.T) {
