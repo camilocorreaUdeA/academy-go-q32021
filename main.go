@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	itemsRoute = "/items/"
-	filmsRoute = "/films/"
+	filmsRoute       = "/films"
+	filmsRouteParams = "/films/"
 )
 
 func main() {
@@ -41,8 +41,8 @@ func main() {
 
 	}
 
-	http.HandleFunc(filmsRoute, ghibliHandler.GetFilms)
-	http.HandleFunc(filmsRoute, ghibliHandler.GetFilm)
+	http.HandleFunc(filmsRoute, ghibliHandler.FilmsMux)
+	http.HandleFunc(filmsRouteParams, ghibliHandler.FilmsMux)
 	err = http.ListenAndServe(serviceConfig, nil)
 	if err != nil {
 		log.Printf("An error ocurred trying to run the service: %s", err.Error())
