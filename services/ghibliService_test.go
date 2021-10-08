@@ -76,6 +76,44 @@ func TestGetFilms(t *testing.T) {
 }
 
 func TestGetFilm(t *testing.T) {
+	t.Run("Get film from repository succeded", func(t *testing.T) {
+		asserter := assert.New(t)
+		mockRepo := &MockFilmsRepo{}
+		mockClient := &MockGhibliClient{}
+		service, err := NewGhibliService(mockRepo, mockClient)
+		asserter.Nil(err)
+		asserter.NotNil(service)
+		films := [][]string{
+			{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14"},
+		}
+		var query = map[string][]string{
+			"id": {"0"},
+		}
+		mockRepo.On("ReadCSVFile", mock.AnythingOfType("string")).Return(films, nil)
+		res, err := service.GetFilm(query)
+		asserter.Nil(err)
+		asserter.NotEmpty(res)
+		asserter.Equal("7", res.ReleaseDate)
+	})
+	t.Run("Get film from reposirory failed -> reading csv", func(t *testing.T) {
+		asserter := assert.New(t)
+		mockRepo := &MockFilmsRepo{}
+		mockClient := &MockGhibliClient{}
+		service, err := NewGhibliService(mockRepo, mockClient)
+		asserter.Nil(err)
+		asserter.NotNil(service)
+		var query = map[string][]string{
+			"id": {"0"},
+		}
+		mockRepo.On("ReadCSVFile", mock.AnythingOfType("string")).Return([][]string{}, errors.New("ahhh!"))
+		res, err := service.GetFilm(query)
+		asserter.NotNil(err)
+		asserter.Empty(res)
+	})
+
+}
+
+func TestCreateFilm(t *testing.T) {
 	t.Run("Get film succeded", func(t *testing.T) {
 		asserter := assert.New(t)
 		mockRepo := &MockFilmsRepo{}
@@ -91,7 +129,7 @@ func TestGetFilm(t *testing.T) {
 		}
 		mockClient.On("GetFilmById", "1").Return(filmObj, nil)
 		mockRepo.On("UpdateCSVFile", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(nil)
-		err = service.GetFilm(query)
+		err = service.CreateFilm(query)
 		asserter.Nil(err)
 	})
 	t.Run("Get film failed -> client errored", func(t *testing.T) {
@@ -106,7 +144,7 @@ func TestGetFilm(t *testing.T) {
 			"id": {"1"},
 		}
 		mockClient.On("GetFilmById", "1").Return(filmObj, errors.New("shit!!"))
-		err = service.GetFilm(query)
+		err = service.CreateFilm(query)
 		asserter.NotNil(err)
 	})
 	t.Run("Get film failed -> repo errored", func(t *testing.T) {
@@ -124,7 +162,7 @@ func TestGetFilm(t *testing.T) {
 		}
 		mockClient.On("GetFilmById", "1").Return(filmObj, nil)
 		mockRepo.On("UpdateCSVFile", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(errors.New("fail!"))
-		err = service.GetFilm(query)
+		err = service.CreateFilm(query)
 		asserter.NotNil(err)
 	})
 }

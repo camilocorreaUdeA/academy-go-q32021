@@ -11,7 +11,8 @@ import (
 )
 
 type Service interface {
-	GetFilm(query url.Values) error
+	CreateFilm(query url.Values) error
+	GetFilm(query url.Values) (models.GhibliFilm, error)
 	GetFilms() ([]models.GhibliFilm, error)
 }
 
@@ -20,6 +21,7 @@ type GhibliService struct {
 	httpClient client.GhibliApiClient
 }
 
+// NewGhibliService returns a service instance, used to query ghibli films API and the repository
 func NewGhibliService(repo repository.Repository, client client.GhibliApiClient) (*GhibliService, error) {
 	if repo == nil {
 		return &GhibliService{}, fmt.Errorf("service requires a repository")
@@ -33,6 +35,7 @@ func NewGhibliService(repo repository.Repository, client client.GhibliApiClient)
 	}, nil
 }
 
+// GetFilms requests all films in the ghibli API
 func (gs *GhibliService) GetFilms() ([]models.GhibliFilm, error) {
 	films, err := gs.httpClient.GetFilms()
 	if err != nil {
@@ -43,7 +46,8 @@ func (gs *GhibliService) GetFilms() ([]models.GhibliFilm, error) {
 	return films, nil
 }
 
-func (gs *GhibliService) GetFilm(query url.Values) error {
+// CreateFilm fecthes a film from ghibli API and updates the repository
+func (gs *GhibliService) CreateFilm(query url.Values) error {
 	requestedFilmID := query.Get("id")
 
 	film, err := gs.httpClient.GetFilmById(requestedFilmID)
@@ -58,6 +62,46 @@ func (gs *GhibliService) GetFilm(query url.Values) error {
 		return err
 	}
 	return nil
+}
+
+// GetFilm retieves a record from the repository
+func (gs *GhibliService) GetFilm(query url.Values) (models.GhibliFilm, error) {
+	requestedFilmID := query.Get("id")
+	films, err := gs.filsmRepo.ReadCSVFile(filmsFile)
+	if err != nil {
+		log.Printf("Failed to fetch film from repository: %s", err)
+		return models.GhibliFilm{}, err
+	}
+	return filterFilmsById(films, requestedFilmID)
+}
+
+func filterFilmsById(films [][]string, id string) (models.GhibliFilm, error) {
+	for _, film := range films {
+		if film[0] == id {
+			return recordToFilmObject(film), nil
+		}
+	}
+	return models.GhibliFilm{}, fmt.Errorf("film with id %s not found in repository", id)
+}
+
+func recordToFilmObject(record []string) models.GhibliFilm {
+	return models.GhibliFilm{
+		ID:                     record[0],
+		Title:                  record[1],
+		OriginalTitle:          record[2],
+		OriginalTitleRomanised: record[3],
+		Description:            record[4],
+		Director:               record[5],
+		Producer:               record[6],
+		ReleaseDate:            record[7],
+		RunningTime:            record[8],
+		RtScore:                record[9],
+		People:                 []string{record[10]},
+		Species:                []string{record[11]},
+		Locations:              []string{record[12]},
+		Vehicles:               []string{record[13]},
+		Url:                    record[14],
+	}
 }
 
 func filmObjectToRecord(film models.GhibliFilm) []string {

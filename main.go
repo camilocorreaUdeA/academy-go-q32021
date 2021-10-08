@@ -41,7 +41,7 @@ func main() {
 
 	}
 
-	http.HandleFunc(filmsRoute, ghibliHandler.FilmsMux)
+	http.HandleFunc(filmsRoute, ghibliHandler.GetFilms)
 	http.HandleFunc(filmsRouteParams, ghibliHandler.FilmsMux)
 	err = http.ListenAndServe(serviceConfig, nil)
 	if err != nil {

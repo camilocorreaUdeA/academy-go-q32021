@@ -19,6 +19,7 @@ type GhibliClient struct {
 	client common.HttpClient
 }
 
+// NewGhibliApiClient creates a new instance of the GhibliClient struct
 func NewGhibliApiClient(c common.HttpClient) (*GhibliClient, error) {
 	if c == nil {
 		return &GhibliClient{}, fmt.Errorf("ghibliclient needs an http client to work")
@@ -28,6 +29,7 @@ func NewGhibliApiClient(c common.HttpClient) (*GhibliClient, error) {
 	}, nil
 }
 
+// GetFilms qeuries the ghibli films API and returns all films
 func (gc *GhibliClient) GetFilms() ([]models.GhibliFilm, error) {
 	response, err := gc.client.CallApi(http.MethodGet, ghibliApiUrl, "films", "")
 	if err != nil {
@@ -42,6 +44,7 @@ func (gc *GhibliClient) GetFilms() ([]models.GhibliFilm, error) {
 	return films, err
 }
 
+// GetFilmById queries a single film from ghibli API
 func (gc *GhibliClient) GetFilmById(id string) (models.GhibliFilm, error) {
 	response, err := gc.client.CallApi(http.MethodGet, ghibliApiUrl, "films", id)
 	if err != nil {

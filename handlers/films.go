@@ -13,6 +13,7 @@ type GhibliHandler struct {
 	service services.Service
 }
 
+// NewGhibliHandler returns a handler with the functions that can be attached to the endpoints
 func NewGhibliHandler(svc services.Service) (GhibliHandler, error) {
 	if svc == nil {
 		return GhibliHandler{}, fmt.Errorf("the handler requires a valid service")
@@ -22,10 +23,11 @@ func NewGhibliHandler(svc services.Service) (GhibliHandler, error) {
 	}, nil
 }
 
+// FilmsMux multiplexes different requests made to the same endpoint "/films/"
 func (gh GhibliHandler) FilmsMux(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		gh.GetFilms(w, r)
+		gh.GetFilm(w, r)
 	case http.MethodPost:
 		gh.PostFilm(w, r)
 	default:
@@ -36,10 +38,9 @@ func (gh GhibliHandler) FilmsMux(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// GetFilm handles the request and returns back requested items
-// in json encoded response.
+// PostFilm queries the ghibli API and adds the film to the repository.
 func (gh GhibliHandler) PostFilm(w http.ResponseWriter, r *http.Request) {
-	err := gh.service.GetFilm(r.URL.Query())
+	err := gh.service.CreateFilm(r.URL.Query())
 	if err != nil {
 		log.Printf("Failed to marshal handler response: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -51,6 +52,28 @@ func (gh GhibliHandler) PostFilm(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+// GetFilm fetchs a film currently stored in repository
+func (gh GhibliHandler) GetFilm(w http.ResponseWriter, r *http.Request) {
+	film, err := gh.service.GetFilm(r.URL.Query())
+	if err != nil {
+		log.Printf("Failed to fetch film: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	jsonFilm, err := json.Marshal(film)
+	if err != nil {
+		log.Printf("Failed to marshal handler response: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonFilm)
+	return
+}
+
+// GetFilms retrieves all films in the ghibli films API
 func (gh GhibliHandler) GetFilms(w http.ResponseWriter, r *http.Request) {
 	films, err := gh.service.GetFilms()
 	if err != nil {
@@ -66,7 +89,6 @@ func (gh GhibliHandler) GetFilms(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
 		return
-
 	}
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonFilms)

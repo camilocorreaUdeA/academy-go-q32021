@@ -14,16 +14,17 @@ type Repository interface {
 type FilmsRepository struct {
 }
 
+// NewFilmsRepo returns a new instance of the FilmsRepository struct
 func NewFilmsRepo() FilmsRepository {
 	return FilmsRepository{}
 }
 
-// ReadCSVFile returns a slice of model.Item objects that were
-// read from the .CSV file in the specified file path.
+// ReadCSVFile returns all the records found in the respository csv file
 func (fr FilmsRepository) ReadCSVFile(filename string) ([][]string, error) {
 	return fr.readCSVFileRecords(filename)
 }
 
+// UpdateCSVFile appends a new record to the repository csv file
 func (fr FilmsRepository) UpdateCSVFile(filename string, record []string) error {
 	records, err := fr.readCSVFileRecords(filename)
 	if err != nil {
