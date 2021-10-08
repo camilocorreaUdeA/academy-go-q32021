@@ -21,6 +21,7 @@ func NewHttpClient() *httpClient {
 	return newClient
 }
 
+// CallApi is the single method exposed for all http requests with http.Client
 func (h *httpClient) CallApi(method, url, resource, id string) ([]byte, error) {
 	var response *http.Response
 	var err error
