@@ -14,6 +14,7 @@ type httpClient struct {
 	client *http.Client
 }
 
+// NewHttpClient returns an instance of the http client
 func NewHttpClient() *httpClient {
 	newClient := &httpClient{
 		client: &http.Client{},
