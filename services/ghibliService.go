@@ -10,33 +10,33 @@ import (
 	"github.com/camilocorreaUdeA/academy-go-q32021/repository"
 )
 
-type Service interface {
+type GhibliService interface {
 	CreateFilm(query url.Values) error
 	GetFilm(query url.Values) (models.GhibliFilm, error)
 	GetFilms() ([]models.GhibliFilm, error)
 }
 
-type GhibliService struct {
-	filsmRepo  repository.Repository
+type ghibliService struct {
+	filsmRepo  repository.FilmsRepository
 	httpClient client.GhibliApiClient
 }
 
 // NewGhibliService returns a service instance, used to query ghibli films API and the repository
-func NewGhibliService(repo repository.Repository, client client.GhibliApiClient) (*GhibliService, error) {
+func NewGhibliService(repo repository.FilmsRepository, client client.GhibliApiClient) (*ghibliService, error) {
 	if repo == nil {
-		return &GhibliService{}, fmt.Errorf("service requires a repository")
+		return &ghibliService{}, fmt.Errorf("service requires a repository")
 	}
 	if client == nil {
-		return &GhibliService{}, fmt.Errorf("service requires an http client")
+		return &ghibliService{}, fmt.Errorf("service requires an http client")
 	}
-	return &GhibliService{
+	return &ghibliService{
 		filsmRepo:  repo,
 		httpClient: client,
 	}, nil
 }
 
 // GetFilms requests all films in the ghibli API
-func (gs *GhibliService) GetFilms() ([]models.GhibliFilm, error) {
+func (gs *ghibliService) GetFilms() ([]models.GhibliFilm, error) {
 	films, err := gs.httpClient.GetFilms()
 	if err != nil {
 		log.Printf("Failed to fetch films from api: %s", err)
@@ -47,7 +47,7 @@ func (gs *GhibliService) GetFilms() ([]models.GhibliFilm, error) {
 }
 
 // CreateFilm fecthes a film from ghibli API and updates the repository
-func (gs *GhibliService) CreateFilm(query url.Values) error {
+func (gs *ghibliService) CreateFilm(query url.Values) error {
 	requestedFilmID := query.Get("id")
 
 	film, err := gs.httpClient.GetFilmById(requestedFilmID)
@@ -56,7 +56,7 @@ func (gs *GhibliService) CreateFilm(query url.Values) error {
 		return err
 	}
 	newRecord := filmObjectToRecord(film)
-	err = gs.filsmRepo.UpdateCSVFile(filmsFile, newRecord)
+	err = gs.filsmRepo.UpdateCSVFile(newRecord)
 	if err != nil {
 		log.Printf("Failed to update CSV file: %s", err)
 		return err
@@ -65,9 +65,9 @@ func (gs *GhibliService) CreateFilm(query url.Values) error {
 }
 
 // GetFilm retieves a record from the repository
-func (gs *GhibliService) GetFilm(query url.Values) (models.GhibliFilm, error) {
+func (gs *ghibliService) GetFilm(query url.Values) (models.GhibliFilm, error) {
 	requestedFilmID := query.Get("id")
-	films, err := gs.filsmRepo.ReadCSVFile(filmsFile)
+	films, err := gs.filsmRepo.ReadCSVFile()
 	if err != nil {
 		log.Printf("Failed to fetch film from repository: %s", err)
 		return models.GhibliFilm{}, err

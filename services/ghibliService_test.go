@@ -7,9 +7,12 @@ import (
 	"testing"
 
 	"github.com/camilocorreaUdeA/academy-go-q32021/models"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
+
+const singleFilm = "./testdata/film.json"
 
 type MockGhibliClient struct {
 	mock.Mock
@@ -19,13 +22,13 @@ type MockFilmsRepo struct {
 	mock.Mock
 }
 
-func (m *MockFilmsRepo) UpdateCSVFile(filename string, record []string) error {
-	args := m.Called(filename, record)
+func (m *MockFilmsRepo) UpdateCSVFile(record []string) error {
+	args := m.Called(record)
 	return args.Error(0)
 }
 
-func (m *MockFilmsRepo) ReadCSVFile(filename string) ([][]string, error) {
-	args := m.Called(filename)
+func (m *MockFilmsRepo) ReadCSVFile() ([][]string, error) {
+	args := m.Called()
 	return args.Get(0).([][]string), args.Error(1)
 }
 
@@ -89,7 +92,7 @@ func TestGetFilm(t *testing.T) {
 		var query = map[string][]string{
 			"id": {"0"},
 		}
-		mockRepo.On("ReadCSVFile", mock.AnythingOfType("string")).Return(films, nil)
+		mockRepo.On("ReadCSVFile").Return(films, nil)
 		res, err := service.GetFilm(query)
 		asserter.Nil(err)
 		asserter.NotEmpty(res)
@@ -105,7 +108,7 @@ func TestGetFilm(t *testing.T) {
 		var query = map[string][]string{
 			"id": {"0"},
 		}
-		mockRepo.On("ReadCSVFile", mock.AnythingOfType("string")).Return([][]string{}, errors.New("ahhh!"))
+		mockRepo.On("ReadCSVFile").Return([][]string{}, errors.New("ahhh!"))
 		res, err := service.GetFilm(query)
 		asserter.NotNil(err)
 		asserter.Empty(res)
@@ -121,14 +124,14 @@ func TestCreateFilm(t *testing.T) {
 		service, err := NewGhibliService(mockRepo, mockClient)
 		asserter.Nil(err)
 		asserter.NotNil(service)
-		film, _ := ioutil.ReadFile("./testdata/film.json")
+		film, _ := ioutil.ReadFile(singleFilm)
 		filmObj := models.GhibliFilm{}
 		_ = json.Unmarshal(film, &filmObj)
 		var query = map[string][]string{
 			"id": {"1"},
 		}
 		mockClient.On("GetFilmById", "1").Return(filmObj, nil)
-		mockRepo.On("UpdateCSVFile", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(nil)
+		mockRepo.On("UpdateCSVFile", mock.AnythingOfType("[]string")).Return(nil)
 		err = service.CreateFilm(query)
 		asserter.Nil(err)
 	})
@@ -154,14 +157,14 @@ func TestCreateFilm(t *testing.T) {
 		service, err := NewGhibliService(mockRepo, mockClient)
 		asserter.Nil(err)
 		asserter.NotNil(service)
-		film, _ := ioutil.ReadFile("./testdata/film.json")
+		film, _ := ioutil.ReadFile(singleFilm)
 		filmObj := models.GhibliFilm{}
 		_ = json.Unmarshal(film, &filmObj)
 		var query = map[string][]string{
 			"id": {"1"},
 		}
 		mockClient.On("GetFilmById", "1").Return(filmObj, nil)
-		mockRepo.On("UpdateCSVFile", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(errors.New("fail!"))
+		mockRepo.On("UpdateCSVFile", mock.AnythingOfType("[]string")).Return(errors.New("fail!"))
 		err = service.CreateFilm(query)
 		asserter.NotNil(err)
 	})

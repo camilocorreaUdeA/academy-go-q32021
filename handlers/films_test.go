@@ -9,9 +9,12 @@ import (
 	"testing"
 
 	"github.com/camilocorreaUdeA/academy-go-q32021/models"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
+
+const allFilms = "./testdata/allfilms.json"
 
 type MockService struct {
 	mock.Mock
@@ -124,7 +127,7 @@ func TestGetFilm(t *testing.T) {
 }
 
 func TestGetFilms(t *testing.T) {
-	films, _ := ioutil.ReadFile("./testdata/allfilms.json")
+	films, _ := ioutil.ReadFile(allFilms)
 	t.Run("Fetch all films succeded", func(t *testing.T) {
 		asserter := assert.New(t)
 		mockService := &MockService{}

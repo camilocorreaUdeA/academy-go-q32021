@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/camilocorreaUdeA/academy-go-q32021/common"
+	"github.com/camilocorreaUdeA/academy-go-q32021/constants"
 	"github.com/camilocorreaUdeA/academy-go-q32021/models"
 )
 
@@ -15,23 +16,23 @@ type GhibliApiClient interface {
 	GetFilmById(id string) (models.GhibliFilm, error)
 }
 
-type GhibliClient struct {
+type ghibliClient struct {
 	client common.HttpClient
 }
 
 // NewGhibliApiClient creates a new instance of the GhibliClient struct
-func NewGhibliApiClient(c common.HttpClient) (*GhibliClient, error) {
+func NewGhibliApiClient(c common.HttpClient) (*ghibliClient, error) {
 	if c == nil {
-		return &GhibliClient{}, fmt.Errorf("ghibliclient needs an http client to work")
+		return &ghibliClient{}, fmt.Errorf("ghibliclient needs an http client to work")
 	}
-	return &GhibliClient{
+	return &ghibliClient{
 		client: c,
 	}, nil
 }
 
 // GetFilms qeuries the ghibli films API and returns all films
-func (gc *GhibliClient) GetFilms() ([]models.GhibliFilm, error) {
-	response, err := gc.client.CallApi(http.MethodGet, ghibliApiUrl, "films", "")
+func (gc *ghibliClient) GetFilms() ([]models.GhibliFilm, error) {
+	response, err := gc.client.CallApi(http.MethodGet, constants.GhibliApiUrl, constants.FILMS, "")
 	if err != nil {
 		log.Printf("api call failed, unable to fetch data: %s", err)
 		return []models.GhibliFilm{}, err
@@ -45,8 +46,8 @@ func (gc *GhibliClient) GetFilms() ([]models.GhibliFilm, error) {
 }
 
 // GetFilmById queries a single film from ghibli API
-func (gc *GhibliClient) GetFilmById(id string) (models.GhibliFilm, error) {
-	response, err := gc.client.CallApi(http.MethodGet, ghibliApiUrl, "films", id)
+func (gc *ghibliClient) GetFilmById(id string) (models.GhibliFilm, error) {
+	response, err := gc.client.CallApi(http.MethodGet, constants.GhibliApiUrl, constants.FILMS, id)
 	if err != nil {
 		log.Printf("api call failed, unable to fetch data: %s", err)
 		return models.GhibliFilm{}, err

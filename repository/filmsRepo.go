@@ -6,33 +6,36 @@ import (
 	"os"
 )
 
-type Repository interface {
-	UpdateCSVFile(filename string, record []string) error
-	ReadCSVFile(filename string) ([][]string, error)
+type FilmsRepository interface {
+	UpdateCSVFile(record []string) error
+	ReadCSVFile() ([][]string, error)
 }
 
-type FilmsRepository struct {
+type filmsRepository struct {
+	file string
 }
 
 // NewFilmsRepo returns a new instance of the FilmsRepository struct
-func NewFilmsRepo() FilmsRepository {
-	return FilmsRepository{}
+func NewFilmsRepo(filename string) filmsRepository {
+	return filmsRepository{
+		file: filename,
+	}
 }
 
 // ReadCSVFile returns all the records found in the respository csv file
-func (fr FilmsRepository) ReadCSVFile(filename string) ([][]string, error) {
-	return fr.readCSVFileRecords(filename)
+func (fr filmsRepository) ReadCSVFile() ([][]string, error) {
+	return fr.readCSVFileRecords()
 }
 
 // UpdateCSVFile appends a new record to the repository csv file
-func (fr FilmsRepository) UpdateCSVFile(filename string, record []string) error {
-	records, err := fr.readCSVFileRecords(filename)
+func (fr filmsRepository) UpdateCSVFile(record []string) error {
+	records, err := fr.readCSVFileRecords()
 	if err != nil {
 		log.Printf("failed to read csv file: %s", err)
 		return err
 	}
 	records = append(records, record)
-	err = fr.writeRecordsToCSVFile(filename, records)
+	err = fr.writeRecordsToCSVFile(records)
 	if err != nil {
 		log.Printf("failed to write csv file: %s", err)
 		return err
@@ -40,8 +43,8 @@ func (fr FilmsRepository) UpdateCSVFile(filename string, record []string) error 
 	return nil
 }
 
-func (fr FilmsRepository) readCSVFileRecords(filename string) ([][]string, error) {
-	file, err := os.Open(filename)
+func (fr filmsRepository) readCSVFileRecords() ([][]string, error) {
+	file, err := os.Open(fr.file)
 	if err != nil {
 		log.Printf("could not open csv file (read): %s", err)
 		return [][]string{}, err
@@ -56,8 +59,8 @@ func (fr FilmsRepository) readCSVFileRecords(filename string) ([][]string, error
 	return records, nil
 }
 
-func (fr *FilmsRepository) writeRecordsToCSVFile(filename string, records [][]string) error {
-	file, err := os.OpenFile(filename, os.O_WRONLY, 777)
+func (fr *filmsRepository) writeRecordsToCSVFile(records [][]string) error {
+	file, err := os.OpenFile(fr.file, os.O_WRONLY, 777)
 	if err != nil {
 		log.Printf("could not open csv file (write): %s", err)
 		return err

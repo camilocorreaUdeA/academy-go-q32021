@@ -9,22 +9,28 @@ import (
 	"github.com/camilocorreaUdeA/academy-go-q32021/services"
 )
 
-type GhibliHandler struct {
-	service services.Service
+type GhibliHandler interface {
+	FilmsMux(w http.ResponseWriter, r *http.Request)
+	PostFilm(w http.ResponseWriter, r *http.Request)
+	GetFilm(w http.ResponseWriter, r *http.Request)
+	GetFilms(w http.ResponseWriter, r *http.Request)
+}
+type ghibliHandler struct {
+	service services.GhibliService
 }
 
 // NewGhibliHandler returns a handler with the functions that can be attached to the endpoints
-func NewGhibliHandler(svc services.Service) (GhibliHandler, error) {
+func NewGhibliHandler(svc services.GhibliService) (ghibliHandler, error) {
 	if svc == nil {
-		return GhibliHandler{}, fmt.Errorf("the handler requires a valid service")
+		return ghibliHandler{}, fmt.Errorf("the handler requires a valid service")
 	}
-	return GhibliHandler{
+	return ghibliHandler{
 		service: svc,
 	}, nil
 }
 
 // FilmsMux multiplexes different requests made to the same endpoint "/films/"
-func (gh GhibliHandler) FilmsMux(w http.ResponseWriter, r *http.Request) {
+func (gh ghibliHandler) FilmsMux(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		gh.GetFilm(w, r)
@@ -39,7 +45,7 @@ func (gh GhibliHandler) FilmsMux(w http.ResponseWriter, r *http.Request) {
 }
 
 // PostFilm queries the ghibli API and adds the film to the repository.
-func (gh GhibliHandler) PostFilm(w http.ResponseWriter, r *http.Request) {
+func (gh ghibliHandler) PostFilm(w http.ResponseWriter, r *http.Request) {
 	err := gh.service.CreateFilm(r.URL.Query())
 	if err != nil {
 		log.Printf("Failed to marshal handler response: %s", err)
@@ -53,7 +59,7 @@ func (gh GhibliHandler) PostFilm(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetFilm fetchs a film currently stored in repository
-func (gh GhibliHandler) GetFilm(w http.ResponseWriter, r *http.Request) {
+func (gh ghibliHandler) GetFilm(w http.ResponseWriter, r *http.Request) {
 	film, err := gh.service.GetFilm(r.URL.Query())
 	if err != nil {
 		log.Printf("Failed to fetch film: %s", err)
@@ -74,7 +80,7 @@ func (gh GhibliHandler) GetFilm(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetFilms retrieves all films in the ghibli films API
-func (gh GhibliHandler) GetFilms(w http.ResponseWriter, r *http.Request) {
+func (gh ghibliHandler) GetFilms(w http.ResponseWriter, r *http.Request) {
 	films, err := gh.service.GetFilms()
 	if err != nil {
 		log.Printf("Failed to fetch films: %s", err)

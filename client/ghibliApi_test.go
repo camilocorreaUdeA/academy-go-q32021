@@ -6,8 +6,14 @@ import (
 	"testing"
 
 	"github.com/camilocorreaUdeA/academy-go-q32021/common"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+)
+
+const (
+	allFilms   = "./testdata/allfilms.json"
+	singleFilm = "./testdata/film.json"
 )
 
 type MockHttpClient struct {
@@ -30,7 +36,7 @@ func TestNewGhibliApiClient(t *testing.T) {
 func TestGetFilms(t *testing.T) {
 	t.Run("Films fetched successfully", func(t *testing.T) {
 		asserter := assert.New(t)
-		film, _ := ioutil.ReadFile("./testdata/allfilms.json")
+		film, _ := ioutil.ReadFile(allFilms)
 		mockClient := &MockHttpClient{}
 		mockClient.On("CallApi", mock.AnythingOfType("string"), mock.AnythingOfType("string"),
 			mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(film, nil)
@@ -59,7 +65,7 @@ func TestGetFilms(t *testing.T) {
 func TestGetFilmById(t *testing.T) {
 	t.Run("Film fetched successfully", func(t *testing.T) {
 		asserter := assert.New(t)
-		film, _ := ioutil.ReadFile("./testdata/film.json")
+		film, _ := ioutil.ReadFile(singleFilm)
 		mockClient := &MockHttpClient{}
 		mockClient.On("CallApi", mock.AnythingOfType("string"), mock.AnythingOfType("string"),
 			mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(film, nil)
