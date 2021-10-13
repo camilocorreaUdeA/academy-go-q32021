@@ -68,7 +68,7 @@ func TestFilmsMux(t *testing.T) {
 		resp := w.Result()
 		body, _ := ioutil.ReadAll(resp.Body)
 		asserter.Equal(200, resp.StatusCode)
-		asserter.Equal("Film was correctly fetched and added to repository (csv file)", string(body))
+		asserter.Equal("{\"response\":\"Film was correctly fetched and added to repository (csv file)\"}\n", string(body))
 	})
 
 	t.Run("Other request", func(t *testing.T) {
@@ -83,7 +83,7 @@ func TestFilmsMux(t *testing.T) {
 		resp := w.Result()
 		body, _ := ioutil.ReadAll(resp.Body)
 		asserter.Equal(400, resp.StatusCode)
-		asserter.Equal("http method not allowed", string(body))
+		asserter.Equal("{\"response\":\"http method not allowed\"}\n", string(body))
 	})
 }
 
@@ -101,7 +101,7 @@ func TestPostFilm(t *testing.T) {
 		resp := w.Result()
 		body, _ := ioutil.ReadAll(resp.Body)
 		asserter.Equal(200, resp.StatusCode)
-		asserter.Equal("Film was correctly fetched and added to repository (csv file)", string(body))
+		asserter.Equal("{\"response\":\"Film was correctly fetched and added to repository (csv file)\"}\n", string(body))
 	})
 }
 
