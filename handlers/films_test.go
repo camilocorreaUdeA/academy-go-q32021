@@ -35,6 +35,11 @@ func (m *MockService) GetFilms() ([]models.GhibliFilm, error) {
 	return args.Get(0).([]models.GhibliFilm), args.Error(1)
 }
 
+func (m *MockService) GetFilmsConcurrently(query url.Values) ([]models.GhibliFilm, error) {
+	args := m.Called(query)
+	return args.Get(0).([]models.GhibliFilm), args.Error(1)
+}
+
 func TestFilmsMux(t *testing.T) {
 	t.Run("Get request", func(t *testing.T) {
 		asserter := assert.New(t)

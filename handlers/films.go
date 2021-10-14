@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/camilocorreaUdeA/academy-go-q32021/services"
+	"github.com/camilocorreaUdeA/academy-go-q32021/workerspool"
 )
 
 type GhibliHandler interface {
@@ -86,6 +88,38 @@ func (gh ghibliHandler) GetFilm(w http.ResponseWriter, r *http.Request) {
 // GetFilms retrieves all films in the ghibli films API
 func (gh ghibliHandler) GetFilms(w http.ResponseWriter, r *http.Request) {
 	films, err := gh.service.GetFilms()
+	if err != nil {
+		log.Printf("Failed to fetch films: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Header().Set("Content-Type", "application/json")
+		response := map[string]interface{}{"response": err.Error()}
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	response := map[string]interface{}{"response": films}
+	json.NewEncoder(w).Encode(response)
+	return
+}
+
+func (gh ghibliHandler) TestWorkers(w http.ResponseWriter, r *http.Request) {
+	var jobs []*workerspool.Job
+
+	for i := 1; i <= 50; i++ {
+		jobs = append(jobs, workerspool.NewJob(func(d interface{}) {
+			fmt.Println("Executing job:", d.(int))
+			time.Sleep(100 * time.Millisecond)
+		}, i))
+	}
+
+	pool := workerspool.NewWorkersPool(jobs, 25)
+	pool.Run()
+}
+
+func (gh ghibliHandler) GetFilmsConcurrently(w http.ResponseWriter, r *http.Request) {
+	films, err := gh.service.GetFilmsConcurrently(r.URL.Query())
 	if err != nil {
 		log.Printf("Failed to fetch films: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
