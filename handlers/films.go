@@ -108,10 +108,11 @@ func (gh ghibliHandler) TestWorkers(w http.ResponseWriter, r *http.Request) {
 	var jobs []*workerspool.Job
 
 	for i := 1; i <= 50; i++ {
-		jobs = append(jobs, workerspool.NewJob(func(d interface{}) {
+		jobs = append(jobs, workerspool.NewJob(func(d interface{}) []string {
 			fmt.Println("Executing job:", d.(int))
 			time.Sleep(100 * time.Millisecond)
-		}, i))
+			return nil
+		}, i, 5))
 	}
 
 	pool := workerspool.NewWorkersPool(jobs, 25)

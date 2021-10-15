@@ -105,14 +105,14 @@ func (gs *ghibliService) GetFilmsConcurrently(query url.Values) ([]models.Ghibli
 		return []models.GhibliFilm{}, err
 	}
 	var jobs []*workerspool.Job
-	//maxItemsPerWorkerNum, _ := strconv.Atoi(maxItemsPerWorkerParam)
+	maxItemsPerWorkerNum, _ := strconv.Atoi(maxItemsPerWorkerParam)
 
 	for _, film := range films {
-		jobs = append(jobs, workerspool.NewJob(process, workerParams{
+		jobs = append(jobs, workerspool.NewJob(workerProcess, workerParams{
 			Type:     typeParam,
 			MaxItems: maxItemsPerWorkerParam,
 			Record:   film,
-		}))
+		}, maxItemsPerWorkerNum))
 	}
 
 	maxItemsParamNum, _ := strconv.Atoi(maxItemsParam)
@@ -123,10 +123,11 @@ func (gs *ghibliService) GetFilmsConcurrently(query url.Values) ([]models.Ghibli
 
 	pool := workerspool.NewWorkersPool(jobs, numWorkers)
 	pool.Run()
+
 	return []models.GhibliFilm{}, nil
 }
 
-func process(params interface{}) {
+func workerProcess(params interface{}) []string {
 	p := params.(workerParams)
 	typeParam := p.Type
 	//maxItemsParam := p.MaxItems
@@ -135,8 +136,9 @@ func process(params interface{}) {
 	isNumber := record[0][0:1] <= "9"
 
 	if typeParam == "even" && isNumber || typeParam == "odd" && !isNumber {
-		fmt.Println(record)
+		return record
 	}
+	return nil
 }
 
 func recordToFilmObject(record []string) models.GhibliFilm {
