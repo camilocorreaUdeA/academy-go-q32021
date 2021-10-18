@@ -1,6 +1,7 @@
 package workerspool
 
 import (
+	"fmt"
 	"sync"
 )
 
@@ -30,11 +31,18 @@ func (wp *WorkersPool) Run() {
 
 	for i := range wp.Jobs {
 		wp.jobsQueue <- wp.Jobs[i]
+		fmt.Println("Jobs:", i)
 	}
 	close(wp.jobsQueue)
+
 	for i := 0; i < len(wp.Jobs); i++ {
+		fmt.Println("results")
 		wp.Results = append(wp.Results, <-wp.resultsQueue)
 	}
-	close(wp.resultsQueue)
+
 	wp.wg.Wait()
+
+	//close(wp.jobsQueue)
+	//close(wp.resultsQueue)
+	fmt.Println("here: end of worker pool Run")
 }

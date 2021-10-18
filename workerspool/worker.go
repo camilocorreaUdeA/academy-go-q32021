@@ -1,6 +1,7 @@
 package workerspool
 
 import (
+	"fmt"
 	"log"
 	"sync"
 )
@@ -25,6 +26,7 @@ func (w *Worker) Start(wg *sync.WaitGroup) {
 	go func() {
 		defer wg.Done()
 		for job := range w.jobChan {
+			fmt.Println("jobchan")
 			res := job.Run()
 			if res != nil && w.doneJobs < job.MaxJobs {
 				w.doneJobs += 1
@@ -33,5 +35,6 @@ func (w *Worker) Start(wg *sync.WaitGroup) {
 				w.resChan <- res
 			}
 		}
+		fmt.Println("Done!!")
 	}()
 }
