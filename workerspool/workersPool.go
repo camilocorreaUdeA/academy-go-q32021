@@ -1,7 +1,7 @@
 package workerspool
 
 import (
-	"fmt"
+	"log"
 	"sync"
 )
 
@@ -11,38 +11,40 @@ type WorkersPool struct {
 	jobsQueue    chan *Job
 	resultsQueue chan []string
 	Results      [][]string
+	maxJobs      int
 	wg           sync.WaitGroup
 }
 
-func NewWorkersPool(jobs []*Job, workers int) *WorkersPool {
+// NewWorkersPool returns an instance of the worker pool
+func NewWorkersPool(jobs []*Job, workers int, max int) *WorkersPool {
 	return &WorkersPool{
 		Jobs:         jobs,
 		workersCount: workers,
 		jobsQueue:    make(chan *Job),
-		resultsQueue: make(chan []string),
+		resultsQueue: make(chan []string, len(jobs)),
+		maxJobs:      max,
 	}
 }
 
-func (wp *WorkersPool) Run() {
+// Run executes all jobs by passing them to workers, reads results and returns to the service
+func (wp *WorkersPool) Run() [][]string {
 	for i := 1; i <= wp.workersCount; i++ {
-		worker := NewWorker(wp.jobsQueue, wp.resultsQueue, i)
+		worker := NewWorker(wp.jobsQueue, wp.resultsQueue, i, wp.maxJobs)
 		worker.Start(&wp.wg)
 	}
 
 	for i := range wp.Jobs {
 		wp.jobsQueue <- wp.Jobs[i]
-		fmt.Println("Jobs:", i)
 	}
 	close(wp.jobsQueue)
 
-	for i := 0; i < len(wp.Jobs); i++ {
-		fmt.Println("results")
-		wp.Results = append(wp.Results, <-wp.resultsQueue)
+	wp.wg.Wait()
+	log.Println("All workers finished their jobs")
+
+	close(wp.resultsQueue)
+	for res := range wp.resultsQueue {
+		wp.Results = append(wp.Results, res)
 	}
 
-	wp.wg.Wait()
-
-	//close(wp.jobsQueue)
-	//close(wp.resultsQueue)
-	fmt.Println("here: end of worker pool Run")
+	return wp.Results
 }

@@ -5,10 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/camilocorreaUdeA/academy-go-q32021/services"
-	"github.com/camilocorreaUdeA/academy-go-q32021/workerspool"
 )
 
 type GhibliHandler interface {
@@ -104,21 +102,7 @@ func (gh ghibliHandler) GetFilms(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func (gh ghibliHandler) TestWorkers(w http.ResponseWriter, r *http.Request) {
-	var jobs []*workerspool.Job
-
-	for i := 1; i <= 50; i++ {
-		jobs = append(jobs, workerspool.NewJob(func(d interface{}) []string {
-			fmt.Println("Executing job:", d.(int))
-			time.Sleep(100 * time.Millisecond)
-			return nil
-		}, i, 5))
-	}
-
-	pool := workerspool.NewWorkersPool(jobs, 25)
-	pool.Run()
-}
-
+// GetFilmsConcurrently fetches films from repository concurrently
 func (gh ghibliHandler) GetFilmsConcurrently(w http.ResponseWriter, r *http.Request) {
 	films, err := gh.service.GetFilmsConcurrently(r.URL.Query())
 	if err != nil {

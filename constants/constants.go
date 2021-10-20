@@ -6,6 +6,5 @@ const (
 	FilmsFile         = "assets/films.csv"
 	FilmsRoute        = "/films"
 	FilmsRouteParams  = "/films/"
-	TestWorkersRoute  = "/tests"
-	TestWorkersRoute2 = "/tests/"
+	FilmsWorkersRoute = "/workers/"
 )

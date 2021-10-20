@@ -169,3 +169,45 @@ func TestCreateFilm(t *testing.T) {
 		asserter.NotNil(err)
 	})
 }
+
+// GetFilmsConcurrently(query url.Values) ([]models.GhibliFilm, error)
+
+func TestGetFilmsConcurrently(t *testing.T) {
+	t.Run("Concurrency successful", func(t *testing.T) {
+		asserter := assert.New(t)
+		mockRepo := &MockFilmsRepo{}
+		mockClient := &MockGhibliClient{}
+		service, err := NewGhibliService(mockRepo, mockClient)
+		asserter.Nil(err)
+		asserter.NotNil(service)
+		films := [][]string{
+			{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14"},
+		}
+		var query = map[string][]string{
+			"type":              {"even"},
+			"items":             {"1"},
+			"items_per_workers": {"1"},
+		}
+		mockRepo.On("ReadCSVFile").Return(films, nil)
+		res, err := service.GetFilmsConcurrently(query)
+		asserter.Nil(err)
+		asserter.NotEmpty(res)
+	})
+	t.Run("Concurrency failed -> repo errored", func(t *testing.T) {
+		asserter := assert.New(t)
+		mockRepo := &MockFilmsRepo{}
+		mockClient := &MockGhibliClient{}
+		service, err := NewGhibliService(mockRepo, mockClient)
+		asserter.Nil(err)
+		asserter.NotNil(service)
+		var query = map[string][]string{
+			"type":              {"even"},
+			"items":             {"1"},
+			"items_per_workers": {"1"},
+		}
+		mockRepo.On("ReadCSVFile").Return([][]string{}, errors.New("ahhh!"))
+		res, err := service.GetFilmsConcurrently(query)
+		asserter.NotNil(err)
+		asserter.Empty(res)
+	})
+}

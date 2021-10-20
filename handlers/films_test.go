@@ -149,3 +149,22 @@ func TestGetFilms(t *testing.T) {
 		asserter.Equal(200, resp.StatusCode)
 	})
 }
+
+func TestGetFilmsConcurrently(t *testing.T) {
+	films, _ := ioutil.ReadFile(allFilms)
+	t.Run("Workers films succeded", func(t *testing.T) {
+		asserter := assert.New(t)
+		mockService := &MockService{}
+		handler, err := NewGhibliHandler(mockService)
+		asserter.Nil(err)
+		asserter.NotNil(handler)
+		var filmes []models.GhibliFilm
+		_ = json.Unmarshal(films, &filmes)
+		mockService.On("GetFilmsConcurrently", mock.AnythingOfType("url.Values")).Return(filmes, nil)
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest(http.MethodGet, "/workers/", nil)
+		handler.GetFilmsConcurrently(w, r)
+		resp := w.Result()
+		asserter.Equal(200, resp.StatusCode)
+	})
+}
