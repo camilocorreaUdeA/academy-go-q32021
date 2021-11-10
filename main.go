@@ -43,6 +43,7 @@ func main() {
 
 	http.HandleFunc(constants.FilmsRoute, ghibliHandler.GetFilms)
 	http.HandleFunc(constants.FilmsRouteParams, ghibliHandler.FilmsMux)
+	http.HandleFunc(constants.FilmsWorkersRoute, ghibliHandler.GetFilmsConcurrently)
 	err = http.ListenAndServe(serviceConfig, nil)
 	if err != nil {
 		log.Printf("An error ocurred trying to run the service: %s", err.Error())

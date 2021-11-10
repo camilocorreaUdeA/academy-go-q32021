@@ -56,7 +56,7 @@ func (fr filmsRepository) readCSVFileRecords() ([][]string, error) {
 		log.Printf("failed read all operation: %s", err)
 		return [][]string{}, err
 	}
-	return records, nil
+	return records[1:], nil
 }
 
 func (fr *filmsRepository) writeRecordsToCSVFile(records [][]string) error {

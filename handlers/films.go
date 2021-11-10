@@ -39,7 +39,9 @@ func (gh ghibliHandler) FilmsMux(w http.ResponseWriter, r *http.Request) {
 	default:
 		log.Printf("http method not allowed: %s", r.Method)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`http method not allowed`))
+		w.Header().Set("Content-Type", "application/json")
+		response := map[string]interface{}{"response": "http method not allowed"}
+		json.NewEncoder(w).Encode(response)
 		return
 	}
 }
@@ -50,11 +52,15 @@ func (gh ghibliHandler) PostFilm(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Failed to marshal handler response: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
+		w.Header().Set("Content-Type", "application/json")
+		response := map[string]interface{}{"response": err.Error()}
+		json.NewEncoder(w).Encode(response)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`Film was correctly fetched and added to repository (csv file)`))
+	w.Header().Set("Content-Type", "application/json")
+	response := map[string]interface{}{"response": "Film was correctly fetched and added to repository (csv file)"}
+	json.NewEncoder(w).Encode(response)
 	return
 }
 
@@ -64,18 +70,16 @@ func (gh ghibliHandler) GetFilm(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Failed to fetch film: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
+		w.Header().Set("Content-Type", "application/json")
+		response := map[string]interface{}{"response": err.Error()}
+		json.NewEncoder(w).Encode(response)
 		return
 	}
-	jsonFilm, err := json.Marshal(film)
-	if err != nil {
-		log.Printf("Failed to marshal handler response: %s", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
-		return
-	}
+
 	w.WriteHeader(http.StatusOK)
-	w.Write(jsonFilm)
+	w.Header().Set("Content-Type", "application/json")
+	response := map[string]interface{}{"response": film}
+	json.NewEncoder(w).Encode(response)
 	return
 }
 
@@ -85,18 +89,34 @@ func (gh ghibliHandler) GetFilms(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Failed to fetch films: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
+		w.Header().Set("Content-Type", "application/json")
+		response := map[string]interface{}{"response": err.Error()}
+		json.NewEncoder(w).Encode(response)
 		return
 	}
 
-	jsonFilms, err := json.Marshal(films)
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	response := map[string]interface{}{"response": films}
+	json.NewEncoder(w).Encode(response)
+	return
+}
+
+// GetFilmsConcurrently fetches films from repository concurrently
+func (gh ghibliHandler) GetFilmsConcurrently(w http.ResponseWriter, r *http.Request) {
+	films, err := gh.service.GetFilmsConcurrently(r.URL.Query())
 	if err != nil {
-		log.Printf("Failed to marshal handler response: %s", err)
+		log.Printf("Failed to fetch films: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
+		w.Header().Set("Content-Type", "application/json")
+		response := map[string]interface{}{"response": err.Error()}
+		json.NewEncoder(w).Encode(response)
 		return
 	}
+
 	w.WriteHeader(http.StatusOK)
-	w.Write(jsonFilms)
+	w.Header().Set("Content-Type", "application/json")
+	response := map[string]interface{}{"response": films}
+	json.NewEncoder(w).Encode(response)
 	return
 }

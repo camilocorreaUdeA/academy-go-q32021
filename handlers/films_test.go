@@ -35,6 +35,11 @@ func (m *MockService) GetFilms() ([]models.GhibliFilm, error) {
 	return args.Get(0).([]models.GhibliFilm), args.Error(1)
 }
 
+func (m *MockService) GetFilmsConcurrently(query url.Values) ([]models.GhibliFilm, error) {
+	args := m.Called(query)
+	return args.Get(0).([]models.GhibliFilm), args.Error(1)
+}
+
 func TestFilmsMux(t *testing.T) {
 	t.Run("Get request", func(t *testing.T) {
 		asserter := assert.New(t)
@@ -68,7 +73,7 @@ func TestFilmsMux(t *testing.T) {
 		resp := w.Result()
 		body, _ := ioutil.ReadAll(resp.Body)
 		asserter.Equal(200, resp.StatusCode)
-		asserter.Equal("Film was correctly fetched and added to repository (csv file)", string(body))
+		asserter.Equal("{\"response\":\"Film was correctly fetched and added to repository (csv file)\"}\n", string(body))
 	})
 
 	t.Run("Other request", func(t *testing.T) {
@@ -83,7 +88,7 @@ func TestFilmsMux(t *testing.T) {
 		resp := w.Result()
 		body, _ := ioutil.ReadAll(resp.Body)
 		asserter.Equal(400, resp.StatusCode)
-		asserter.Equal("http method not allowed", string(body))
+		asserter.Equal("{\"response\":\"http method not allowed\"}\n", string(body))
 	})
 }
 
@@ -101,7 +106,7 @@ func TestPostFilm(t *testing.T) {
 		resp := w.Result()
 		body, _ := ioutil.ReadAll(resp.Body)
 		asserter.Equal(200, resp.StatusCode)
-		asserter.Equal("Film was correctly fetched and added to repository (csv file)", string(body))
+		asserter.Equal("{\"response\":\"Film was correctly fetched and added to repository (csv file)\"}\n", string(body))
 	})
 }
 
@@ -140,6 +145,25 @@ func TestGetFilms(t *testing.T) {
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodGet, "/films", nil)
 		handler.GetFilms(w, r)
+		resp := w.Result()
+		asserter.Equal(200, resp.StatusCode)
+	})
+}
+
+func TestGetFilmsConcurrently(t *testing.T) {
+	films, _ := ioutil.ReadFile(allFilms)
+	t.Run("Workers films succeded", func(t *testing.T) {
+		asserter := assert.New(t)
+		mockService := &MockService{}
+		handler, err := NewGhibliHandler(mockService)
+		asserter.Nil(err)
+		asserter.NotNil(handler)
+		var filmes []models.GhibliFilm
+		_ = json.Unmarshal(films, &filmes)
+		mockService.On("GetFilmsConcurrently", mock.AnythingOfType("url.Values")).Return(filmes, nil)
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest(http.MethodGet, "/workers/", nil)
+		handler.GetFilmsConcurrently(w, r)
 		resp := w.Result()
 		asserter.Equal(200, resp.StatusCode)
 	})
